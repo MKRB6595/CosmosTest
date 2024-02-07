@@ -15,6 +15,7 @@ import android.content.pm.PackageManager
 import androidx.core.app.ActivityCompat
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.cosmostest.utils.DataState
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.Dispatchers
@@ -42,7 +43,19 @@ class BleViewModel @Inject constructor(
     private val _connectedDeviceServices = MutableStateFlow<List<BluetoothGattService>>(emptyList())
     val connectedDeviceServices: StateFlow<List<BluetoothGattService>> = _connectedDeviceServices
 
-
+    private val _bleState = MutableStateFlow<DataState<Boolean>>(DataState.Loading)
+    val bleState: StateFlow<DataState<Boolean>> = _bleState
+    init {
+        checkBluetoothEnabled()
+    }
+    fun checkBluetoothEnabled() = viewModelScope.launch {
+        val bluetoothAdapter: BluetoothAdapter? = BluetoothAdapter.getDefaultAdapter()
+        _bleState.value = if (bluetoothAdapter?.isEnabled == true) {
+            DataState.Success(true)
+        } else {
+            DataState.Error(Exception("Bluetooth est désactivé"))
+        }
+    }
     private val scanCallback = object : ScanCallback() {
         override fun onScanResult(callbackType: Int, result: ScanResult) {
             super.onScanResult(callbackType, result)

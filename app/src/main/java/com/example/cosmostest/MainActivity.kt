@@ -106,11 +106,15 @@ fun AppNavigation() {
 }
 @Composable
 fun HomeScreen(navController: NavController, onBluetoothScanClick: () -> Unit) {
+
+
     Column(modifier = Modifier.padding(16.dp)) {
-        Button(onClick = { navController.navigate("deviceList") }) {
+        Button(onClick = {
+            navController.navigate("deviceList") }) {
             Text("Voir les appareils")
         }
-        Button(onClick = onBluetoothScanClick) {
+        Button(onClick =
+            onBluetoothScanClick) {
             Text("Scanner les appareils Bluetooth")
         }
     }

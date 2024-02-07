@@ -9,6 +9,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -17,11 +18,26 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.example.cosmostest.ui.viewmodel.BleViewModel
+import com.example.cosmostest.utils.DataState
 
 @Composable
 fun BluetoothScreen(navController: NavController, bleViewModel: BleViewModel) {
-    val discoveredDevices = bleViewModel.discoveredDevices.collectAsState().value
 
+    val state = bleViewModel.bleState.collectAsState().value
+
+    when (state) {
+        is DataState.Loading -> CircularProgressIndicator()
+        is DataState.Success -> BluetoothDevicesList(navController, bleViewModel)
+        is DataState.Error -> Text("Erreur : ${state.exception.message}")
+    }
+
+
+}
+
+@Composable
+fun BluetoothDevicesList(navController: NavController, bleViewModel: BleViewModel) {
+
+    val discoveredDevices = bleViewModel.discoveredDevices.collectAsState().value
     Column(modifier = Modifier.padding(16.dp)) {
         Text("Discovered Devices", style = MaterialTheme.typography.headlineMedium)
         LazyColumn {
@@ -37,6 +53,7 @@ fun BluetoothScreen(navController: NavController, bleViewModel: BleViewModel) {
 
 @Composable
 fun BluetoothDeviceItem(device: BluetoothDevice, onConnectClick: (BluetoothDevice) -> Unit) {
+
     Card(
         modifier = Modifier
             .padding(vertical = 4.dp)

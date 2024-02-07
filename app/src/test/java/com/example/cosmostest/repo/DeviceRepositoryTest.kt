@@ -4,6 +4,7 @@ import com.example.cosmostest.MainCoroutineRule
 import com.example.cosmostest.api.CosmoApiService
 import com.example.cosmostest.model.ApiResponse
 import com.example.cosmostest.model.Device
+import com.example.cosmostest.utils.DataState
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import org.junit.Assert.assertEquals
 import org.junit.Before
@@ -51,7 +52,9 @@ class DeviceRepositoryTest {
 
         val result = deviceRepository.getDevices()
 
-        assertEquals(mockDeviceList, result)
+        assert(result is DataState.Success)
+        assertEquals(mockDeviceList, (result as DataState.Success).data)
+
     }
 
     @Test
@@ -63,6 +66,6 @@ class DeviceRepositoryTest {
 
         val result = deviceRepository.getDevices()
 
-        assertEquals(null, result)
+        assert(result is DataState.Error)
     }
 }

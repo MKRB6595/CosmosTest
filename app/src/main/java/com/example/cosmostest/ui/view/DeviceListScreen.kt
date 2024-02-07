@@ -8,6 +8,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -17,20 +18,36 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.example.cosmostest.model.Device
 import com.example.cosmostest.ui.viewmodel.DevicesViewModel
+import com.example.cosmostest.utils.DataState
 
 @Composable
 fun DeviceListScreen(navController: NavController, devicesViewModel: DevicesViewModel) {
-    val devices = devicesViewModel.devices.collectAsState()
+    val state = devicesViewModel.devicesState.collectAsState().value
 
+    when (state) {
+        is DataState.Loading -> {
+            CircularProgressIndicator(modifier = Modifier.padding(16.dp))
+        }
+        is DataState.Success -> {
+            DeviceList(state.data, navController = navController)
+        }
+        is DataState.Error -> {
+            Text("Erreur de chargement : ${state.exception.message}", style = MaterialTheme.typography.bodyMedium, modifier = Modifier.padding(16.dp))
+        }
+    }
+
+}
+
+@Composable
+fun DeviceList(device: List<Device>, navController: NavController){
     LazyColumn(contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp)) {
-        items(devices.value) { device ->
+        items(device) { device ->
             DeviceItem(device = device) {
                 navController.navigate("deviceDetail/${device.macAddress}")
             }
         }
     }
 }
-
 
 @Composable
 fun DeviceItem(device: Device, onClick: () -> Unit) {
