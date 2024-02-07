@@ -2,25 +2,25 @@ package com.example.cosmostest.repo
 
 import com.example.cosmostest.api.CosmoApiService
 import com.example.cosmostest.model.Device
+import com.example.cosmostest.utils.DataState
 import com.example.cosmostest.utils.Logger
 import javax.inject.Inject
 
 interface IDeviceRepository {
-    suspend fun getDevices(): List<Device>?
+    suspend fun getDevices(): DataState<List<Device>>
 }
-class DeviceRepository @Inject constructor(private val cosmosApiService: CosmoApiService) : IDeviceRepository{
-    override suspend fun getDevices(): List<Device>? {
-        try {
+
+class DeviceRepository @Inject constructor(private val cosmosApiService: CosmoApiService) : IDeviceRepository {
+    override suspend fun getDevices(): DataState<List<Device>> {
+        return try {
             val response = cosmosApiService.fetchDevices()
             if (response.isSuccessful) {
-                return response.body()?.devices
+                DataState.Success(response.body()?.devices ?: emptyList())
             } else {
-                Logger.e("DeviceRepository", "Error fetching devices: ${response.errorBody()?.string()}")
+                DataState.Error(Exception("Error fetching devices: ${response.errorBody()?.string()}"))
             }
         } catch (e: Exception) {
-            Logger.e("DeviceRepository", "Exception fetching devices", e)
+            DataState.Error(e)
         }
-        return null
     }
-
 }

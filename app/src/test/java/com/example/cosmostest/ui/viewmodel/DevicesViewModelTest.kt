@@ -3,6 +3,7 @@ package com.example.cosmostest.ui.viewmodel
 import com.example.cosmostest.MainCoroutineRule
 import com.example.cosmostest.model.Device
 import com.example.cosmostest.repo.IDeviceRepository
+import com.example.cosmostest.utils.DataState
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.test.runBlockingTest
@@ -30,9 +31,9 @@ class DevicesViewModelTest {
     @Before
     fun setupViewModel() {
         runBlockingTest {
-            whenever(deviceRepository.getDevices()).thenReturn(listOf(
+            whenever(deviceRepository.getDevices()).thenReturn(DataState.Success(listOf(
                 Device("00:11:22:33:44:55", "Device 1", "RIDE", "2.2.2", "Serial1", null, false, "OFF", false, 0)
-            ))
+            )))
         }
         devicesViewModel = DevicesViewModel(deviceRepository)
     }
@@ -40,7 +41,8 @@ class DevicesViewModelTest {
     @Test
     fun loadDevices_loadsIntoStateFlow() = mainCoroutineRule.runBlockingTest {
         devicesViewModel.loadDevices()
-
+        val state = devicesViewModel.devicesState.first()
+        assert(state is DataState.Success)
         assertEquals(listOf(Device("00:11:22:33:44:55",
             "Device 1",
             "RIDE",
@@ -50,7 +52,7 @@ class DevicesViewModelTest {
             false,
             "OFF",
             false,
-            0)), devicesViewModel.devices.first())
+            0)),(state as DataState.Success).data)
     }
 
     @Test
